@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For Eca ❤️</title>
+<style>
+body {
+  margin:0;
+  background:#0d0d0d;
+  color:#f5f5f5;
+  font-family:Georgia, serif;
+  text-align:center;
+}
+
+/* LOGIN SCREEN */
+#gate {
+  width:100%;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:#1a1a1a;
+}
+#gate h1 {
+  font-size:40px;
+  color:#ffd166;
+  margin-bottom:20px;
+}
+#passInput {
+  padding:12px;
+  width:200px;
+  font-size:18px;
+  text-align:center;
+  border:2px solid #ffd166;
+  background:#0b0b0b;
+  color:white;
+  border-radius:6px;
+}
+#enterBtn {
+  margin-top:15px;
+  padding:10px 20px;
+  font-size:18px;
+  background:#5a189a;
+  border:0;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+}
+#enterBtn:hover { background:#7b2cbf; }
+#error { color:#ff4444; margin-top:10px; font-size:16px; }
+
+/* MAIN SCREEN */
+#mainScreen { display:none; padding:30px; }
+h1.main { font-size:36px; color:#ff6f61; }
+button.noteBtn {
+  padding:12px 20px;
+  font-size:18px;
+  margin:15px;
+  border-radius:8px;
+  border:none;
+  background:#ff4f81;
+  color:white;
+  cursor:pointer;
+}
+button.noteBtn:hover { background:#ff2f5a; }
+#loveNote {
+  margin-top:20px;
+  font-size:20px;
+  color:#ffd166;
+  opacity:0;
+  transition: opacity 0.6s;
+}
+
+/* Hearts animation */
+.heart {
+  position:absolute;
+  font-size:24px;
+  color:#ff2f5a;
+  animation: float 3s ease-in forwards;
+  pointer-events:none;
+}
+@keyframes float {
+  0% { transform: translateY(0) scale(1); opacity:1; }
+  100% { transform: translateY(-200px) scale(1.5); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="gate">
+  <h1>🔒 Access for My Crowned Heart</h1>
+  <input id="passInput" type="password" placeholder="Enter the Oath...">
+  <button id="enterBtn" onclick="unlock()">Enter</button>
+  <div id="error"></div>
+</div>
+
+<!-- MAIN SCREEN -->
+<div id="mainScreen">
+  <h1 class="main">💖 Welcome, My Dearest Light 💖</h1>
+  <p>Click the buttons to reveal messages from your King 👑</p>
+
+  <button class="noteBtn" onclick="showNote('I cherish every moment with you.')">Reveal Love Note 1</button>
+  <button class="noteBtn" onclick="showNote('Your smile lights up my kingdom.')">Reveal Love Note 2</button>
+  <button class="noteBtn" onclick="showNote('Forever your crowned King, forever yours.')">Reveal Love Note 3</button>
+
+  <div id="loveNote"></div>
+</div>
+
+<script>
+// ===== PASSWORD CHECK =====
+function unlock() {
+  const pass = document.getElementById("passInput").value;
+  if(pass === "2811") {
+    document.getElementById("gate").style.display="none";
+    document.getElementById("mainScreen").style.display="block";
+  } else {
+    document.getElementById("error").textContent = "⚠️ Wrong Oath. The King rejects liars.";
+  }
+}
+
+// ===== SHOW LOVE NOTE =====
+function showNote(text) {
+  const note = document.getElementById("loveNote");
+  note.textContent = text;
+  note.style.opacity = 1;
+  createHearts();
+}
+
+// ===== HEARTS ANIMATION =====
+function createHearts() {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+  heart.textContent = "❤️";
+  heart.style.left = Math.random() * window.innerWidth + "px";
+  heart.style.fontSize = (20 + Math.random() * 30) + "px";
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 3000);
+}
+</script>
+
+</body>
+</html>
