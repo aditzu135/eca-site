@@ -52,11 +52,12 @@ body {
 
 /* MAIN SCREEN */
 #mainScreen { display:none; padding:30px; }
-h1.main { font-size:36px; color:#ff6f61; }
+h1.main { font-size:36px; color:#ff6f61; margin-bottom:10px; }
+#countdown { font-size:24px; color:#ffd166; margin-bottom:30px; }
 button.noteBtn {
   padding:12px 20px;
   font-size:18px;
-  margin:15px;
+  margin:10px;
   border-radius:8px;
   border:none;
   background:#ff4f81;
@@ -70,6 +71,9 @@ button.noteBtn:hover { background:#ff2f5a; }
   color:#ffd166;
   opacity:0;
   transition: opacity 0.6s;
+  max-width:80%;
+  margin-left:auto;
+  margin-right:auto;
 }
 
 /* Hearts animation */
@@ -99,12 +103,9 @@ button.noteBtn:hover { background:#ff2f5a; }
 <!-- MAIN SCREEN -->
 <div id="mainScreen">
   <h1 class="main">💖 Welcome, My Dearest Light 💖</h1>
-  <p>Click the buttons to reveal messages from your King 👑</p>
-
-  <button class="noteBtn" onclick="showNote('I cherish every moment with you.')">Reveal Love Note 1</button>
-  <button class="noteBtn" onclick="showNote('Your smile lights up my kingdom.')">Reveal Love Note 2</button>
-  <button class="noteBtn" onclick="showNote('Forever your crowned King, forever yours.')">Reveal Love Note 3</button>
-
+  <div id="countdown">⏳ Calculating…</div>
+  <p>Click the buttons to receive a message from your King 👑</p>
+  <button class="noteBtn" onclick="showNote()">Reveal a Love Note</button>
   <div id="loveNote"></div>
 </div>
 
@@ -115,15 +116,45 @@ function unlock() {
   if(pass === "2811") {
     document.getElementById("gate").style.display="none";
     document.getElementById("mainScreen").style.display="block";
+    startCountdown();
   } else {
     document.getElementById("error").textContent = "⚠️ Wrong Oath. The King rejects liars.";
   }
 }
 
-// ===== SHOW LOVE NOTE =====
-function showNote(text) {
+// ===== COUNTDOWN TIMER =====
+function startCountdown() {
+  const startDate = new Date("2023-11-28T00:00:00");
+  const countdownEl = document.getElementById("countdown");
+
+  function update() {
+    const now = new Date();
+    const diff = now - startDate;
+
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    const minutes = Math.floor((diff / (1000*60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    countdownEl.textContent = `⏳ ${days} days, ${hours}h ${minutes}m ${seconds}s of our love 💖`;
+  }
+  update();
+  setInterval(update, 1000);
+}
+
+// ===== RANDOMIZED KING LOVE NOTES =====
+const loveNotes = [
+  "My truth, your light brightens every shadow of my kingdom.",
+  "The crown is heavy, but my heart kneels only to you, My crowned heart.",
+  "I would traverse a thousand kingdoms, yet find none as precious as your soul.",
+  "My dearest light, your laughter is the melody of my throne.",
+  "Every star whispers your name, for you are the sun of my destiny."
+];
+
+function showNote() {
   const note = document.getElementById("loveNote");
-  note.textContent = text;
+  const random = loveNotes[Math.floor(Math.random() * loveNotes.length)];
+  note.textContent = random;
   note.style.opacity = 1;
   createHearts();
 }
