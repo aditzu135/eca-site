@@ -77,6 +77,37 @@ button.playBtn {
   cursor:pointer;
 }
 button.playBtn:hover { background:#89cfff; }
+#embeddedUI { display:block; }
+.embedded {
+  width:320px;
+  margin:20px auto;
+  padding:16px;
+  border-radius:16px;
+  background: linear-gradient(135deg,#ff9aa2 0%, #ff6bcb 50%, #ffb3d9 100%);
+  color:#2b002b;
+  box-shadow: 0 8px 24px rgba(255,77,166,0.18);
+  text-align:center;
+  transform: translateY(0);
+}
+.embedded .heartsRow { font-size:20px; margin-bottom:8px; }
+.embedded #trackName { font-weight:bold; margin-bottom:10px; color:#2b002b; }
+.embedded .playBtn { background:#ff4f81; color:white; padding:10px 16px; border-radius:10px; }
+.embedded .playBtn:hover { background:#ff2f5a; }
+.playerBox {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+  background: rgba(255,255,255,0.9);
+  padding:10px 14px;
+  border-radius:999px;
+  width:260px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.playBtn.small { padding:8px 12px; border-radius:12px; font-size:16px; background:#ff6b9a; }
+.playBtn.small:hover { background:#ff4f81; }
 #loveNote {
   margin-top:20px;
   font-size:20px;
@@ -120,6 +151,16 @@ button.playBtn:hover { background:#89cfff; }
   <button class="noteBtn" onclick="showNote()">Reveal a Love Note</button>
   <button class="playBtn" id="playBtn" onclick="handlePlayClick()">Play Love Songs</button>
   <div id="loveNote"></div>
+  <!-- Embedded cute player UI (shown when playlist is available locally or as fallback) -->
+  <div id="embeddedUI" class="embedded" style="display:none;">
+    <div class="heartsRow">❤️ ❤️‍🔥 ❤️</div>
+    <div id="trackName">Ready to play</div>
+    <button id="shuffleBtn" class="playBtn">Shuffle Play</button>
+    <div class="playerBox" id="playerBox" style="display:none;">
+      <button id="playPauseBtn" class="playBtn small">▶</button>
+      <span id="time" style="margin-left:10px; color:#2b002b;">0:00 / 0:00</span>
+    </div>
+  </div>
   <input type="file" id="folderPicker" webkitdirectory directory multiple style="display:none">
   <audio id="player" controls style="display:none; margin-top:12px;"></audio>
 </div>
@@ -208,6 +249,20 @@ function createHearts() {
 let playlist = [];
 const player = document.getElementById('player');
 const folderPicker = document.getElementById('folderPicker');
+// Embedded fallback for when the page is opened via file:// (fetch may fail)
+const embeddedPlaylist = [
+  'material/driver.mp3',
+  'material/iwby.mp3',
+  'material/nebun.mp3',
+  'material/sweater.mp3',
+  'material/ifnotforyou.mp3'
+];
+const embeddedUI = document.getElementById('embeddedUI');
+const trackNameEl = document.getElementById('trackName');
+const shuffleBtn = document.getElementById('shuffleBtn');
+const playerBox = document.getElementById('playerBox');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const timeEl = document.getElementById('time');
 
 async function tryLoadPlaylistJson() {
   try {
@@ -219,6 +274,11 @@ async function tryLoadPlaylistJson() {
       return true;
     }
   } catch (e) {
+    // If fetch fails (for example when using file://), fall back to embedded list if available
+    if (Array.isArray(embeddedPlaylist) && embeddedPlaylist.length) {
+      playlist = embeddedPlaylist.slice();
+      return true;
+    }
     return false;
   }
   return false;
@@ -234,12 +294,20 @@ function handlePlayClick() {
   // Try loading a playlist manifest (works if served via HTTP)
   tryLoadPlaylistJson().then(found => {
     if (found && playlist.length > 0) {
+      showEmbeddedUI();
       playRandomFromPlaylist();
       return;
     }
 
     // Fallback: ask user to select the folder (works locally in modern browsers)
     document.getElementById('error').textContent = 'Please select the \"material\" folder (or add a file named material/playlist.json listing filenames).';
+    // If embedded playlist is present, show the cute UI and play from embedded list instead of immediately opening folder
+    if (Array.isArray(embeddedPlaylist) && embeddedPlaylist.length) {
+      playlist = embeddedPlaylist.slice();
+      showEmbeddedUI();
+      playRandomFromPlaylist();
+      return;
+    }
     folderPicker.click();
   });
 }
@@ -252,7 +320,15 @@ function playRandomFromPlaylist() {
   const idx = Math.floor(Math.random() * playlist.length);
   const src = playlist[idx];
   player.src = src;
-  player.style.display = 'block';
+  // hide native controls and use custom playerBox
+  try { player.controls = false; } catch (e) {}
+  if (playerBox) playerBox.style.display = 'flex';
+  // Update displayed track name (strip path and extension)
+  try {
+    const raw = decodeURIComponent(src.split('/').pop());
+    const name = raw.replace(/\.[^/.]+$/, '');
+    if (trackNameEl) trackNameEl.textContent = name;
+  } catch (e) {}
   player.play().catch(() => {
     // autoplay may be blocked; controls are shown so user can press play
   });
@@ -272,6 +348,34 @@ function handleFolderFiles(e) {
 }
 
 folderPicker.addEventListener('change', handleFolderFiles);
+// Embedded UI actions
+function showEmbeddedUI() {
+  if (embeddedUI) embeddedUI.style.display = 'block';
+}
+function hideEmbeddedUI() {
+  if (embeddedUI) embeddedUI.style.display = 'none';
+}
+if (shuffleBtn) shuffleBtn.addEventListener('click', playRandomFromPlaylist);
+// Play/pause and time handling for custom UI
+if (playPauseBtn) {
+  playPauseBtn.addEventListener('click', () => {
+    if (!player.src) return playRandomFromPlaylist();
+    if (player.paused) player.play(); else player.pause();
+  });
+}
+player.addEventListener('timeupdate', () => {
+  if (!timeEl) return;
+  const fmt = t => {
+    if (!isFinite(t)) return '0:00';
+    const m = Math.floor(t/60);
+    const s = Math.floor(t%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+  };
+  timeEl.textContent = `${fmt(player.currentTime)} / ${fmt(player.duration)}`;
+});
+player.addEventListener('play', () => { if (playPauseBtn) playPauseBtn.textContent = '❚❚'; });
+player.addEventListener('pause', () => { if (playPauseBtn) playPauseBtn.textContent = '▶'; });
+player.addEventListener('ended', () => { playRandomFromPlaylist(); });
 </script>
 
 </body>
