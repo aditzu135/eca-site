@@ -65,6 +65,18 @@ button.noteBtn {
   cursor:pointer;
 }
 button.noteBtn:hover { background:#ff2f5a; }
+#button.playBtn {}
+button.playBtn {
+  padding:12px 20px;
+  font-size:18px;
+  margin:10px;
+  border-radius:8px;
+  border:none;
+  background:#aee7ff; /* baby blue */
+  color:#002b36;
+  cursor:pointer;
+}
+button.playBtn:hover { background:#89cfff; }
 #loveNote {
   margin-top:20px;
   font-size:20px;
@@ -106,7 +118,10 @@ button.noteBtn:hover { background:#ff2f5a; }
   <div id="countdown">⏳ Calculating…</div>
   <p>Click the buttons to receive a message from your King 👑</p>
   <button class="noteBtn" onclick="showNote()">Reveal a Love Note</button>
+  <button class="playBtn" id="playBtn" onclick="handlePlayClick()">Play Love Songs</button>
   <div id="loveNote"></div>
+  <input type="file" id="folderPicker" webkitdirectory directory multiple style="display:none">
+  <audio id="player" controls style="display:none; margin-top:12px;"></audio>
 </div>
 
 <script>
@@ -188,6 +203,75 @@ function createHearts() {
   document.body.appendChild(heart);
   setTimeout(() => heart.remove(), 3000);
 }
+
+// ===== PLAYLIST / AUDIO PLAYER =====
+let playlist = [];
+const player = document.getElementById('player');
+const folderPicker = document.getElementById('folderPicker');
+
+async function tryLoadPlaylistJson() {
+  try {
+    const resp = await fetch('material/playlist.json', {cache: 'no-store'});
+    if(!resp.ok) throw new Error('no playlist');
+    const list = await resp.json();
+    if(Array.isArray(list) && list.length) {
+      playlist = list.map(p => 'material/' + p);
+      return true;
+    }
+  } catch (e) {
+    return false;
+  }
+  return false;
+}
+
+function handlePlayClick() {
+  // If we already have playlist entries, play immediately
+  if (playlist.length > 0) {
+    playRandomFromPlaylist();
+    return;
+  }
+
+  // Try loading a playlist manifest (works if served via HTTP)
+  tryLoadPlaylistJson().then(found => {
+    if (found && playlist.length > 0) {
+      playRandomFromPlaylist();
+      return;
+    }
+
+    // Fallback: ask user to select the folder (works locally in modern browsers)
+    document.getElementById('error').textContent = 'Please select the \"material\" folder (or add a file named material/playlist.json listing filenames).';
+    folderPicker.click();
+  });
+}
+
+function playRandomFromPlaylist() {
+  if (!playlist || playlist.length === 0) {
+    document.getElementById('error').textContent = 'No songs found to play.';
+    return;
+  }
+  const idx = Math.floor(Math.random() * playlist.length);
+  const src = playlist[idx];
+  player.src = src;
+  player.style.display = 'block';
+  player.play().catch(() => {
+    // autoplay may be blocked; controls are shown so user can press play
+  });
+}
+
+function handleFolderFiles(e) {
+  const files = Array.from(e.target.files || []);
+  const audios = files.filter(f => f.type.startsWith('audio') || /\.(mp3|wav|ogg|m4a|flac|aac)$/i.test(f.name));
+  if (audios.length === 0) {
+    document.getElementById('error').textContent = 'No audio files found in the selected folder.';
+    return;
+  }
+  // Create object URLs for local files
+  playlist = audios.map(f => URL.createObjectURL(f));
+  document.getElementById('error').textContent = '';
+  playRandomFromPlaylist();
+}
+
+folderPicker.addEventListener('change', handleFolderFiles);
 </script>
 
 </body>
