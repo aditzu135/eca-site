@@ -144,46 +144,26 @@ function startCountdown() {
 
 // ===== RANDOMIZED KING LOVE NOTES =====
 const loveNotes = [
-  "I am sworn to love my people equally, yet you are the one for whom I would see my kingdom turned to ash."
-
-"My crown is forged of gold, yet your name is the only jewel it cannot carry without trembling."
-
-"To protect my realm is duty. To protect you, my truth, is instinct deeper than blood."
-
-"Armies obey my voice, but my heart bows only to yours."
-
-"Should destiny ever demand sacrifice, let it take my throne, my breath, my name—yet never you."
-
-"I do not kneel to gods nor kings, but your presence bends my soul into worship."
-
-"The world calls me sovereign. You call me yours—and that is the only title that matters."
-
-"I rule with iron command, yet you, my dearest light, rule me with a whisper."
-
-"My blade defends a kingdom, but my heart defends only you."
-
-"Peace is a luxury I afford my kingdom. Madness is the love I reserve for you."
-
-"If ever I must choose between justice and your smile, then let justice perish."
-
-"Your absence is the only enemy I cannot conquer."
-
-"I could win a thousand wars and still feel defeated without your warmth beside me."
-
-"Your touch could turn battlefields into gardens, and my rage into devotion."
-
-"Let the heavens envy us, for even eternity cannot unbind what our hearts declared in silence."
-
-"If fate tried to steal you from me, I would rewrite fate with fire and oath."
-
-"I am feared by many, but humbled only by your existence."
-
-"The throne gives me power; you give it purpose."
-
-"Your name is carved in the vault of my heart deeper than any crown could rest upon my head."
-
-"Without you, my kingdom is only land. But with you, even ashes would feel like home."
-
+  "I am sworn to love my people equally, yet you are the one for whom I would see my kingdom turned to ash.",
+  "My crown is forged of gold, yet your name is the only jewel it cannot carry without trembling.",
+  "To protect my realm is duty. To protect you, my truth, is instinct deeper than blood.",
+  "Armies obey my voice, but my heart bows only to yours.",
+  "Should destiny ever demand sacrifice, let it take my throne, my breath, my name—yet never you.",
+  "I do not kneel to gods nor kings, but your presence bends my soul into worship.",
+  "The world calls me sovereign. You call me yours—and that is the only title that matters.",
+  "I rule with iron command, yet you, my dearest light, rule me with a whisper.",
+  "My blade defends a kingdom, but my heart defends only you.",
+  "Peace is a luxury I afford my kingdom. Madness is the love I reserve for you.",
+  "If ever I must choose between justice and your smile, then let justice perish.",
+  "Your absence is the only enemy I cannot conquer.",
+  "I could win a thousand wars and still feel defeated without your warmth beside me.",
+  "Your touch could turn battlefields into gardens, and my rage into devotion.",
+  "Let the heavens envy us, for even eternity cannot unbind what our hearts declared in silence.",
+  "If fate tried to steal you from me, I would rewrite fate with fire and oath.",
+  "I am feared by many, but humbled only by your existence.",
+  "The throne gives me power; you give it purpose.",
+  "Your name is carved in the vault of my heart deeper than any crown could rest upon my head.",
+  "Without you, my kingdom is only land. But with you, even ashes would feel like home."
 ];
 
 function showNote() {
@@ -199,8 +179,12 @@ function createHearts() {
   const heart = document.createElement("div");
   heart.classList.add("heart");
   heart.textContent = "❤️";
-  heart.style.left = Math.random() * window.innerWidth + "px";
+  heart.style.left = Math.random() * (window.innerWidth - 40) + "px";
+  // start from near the bottom so the float animation moves upward
+  heart.style.top = (window.innerHeight - 120 + Math.random() * 60) + "px";
   heart.style.fontSize = (20 + Math.random() * 30) + "px";
+  // vary animation duration for natural effect
+  heart.style.animationDuration = (2.5 + Math.random() * 1.5) + "s";
   document.body.appendChild(heart);
   setTimeout(() => heart.remove(), 3000);
 }
